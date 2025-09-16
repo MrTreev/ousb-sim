@@ -1,0 +1,52 @@
+Index:
+  Background: Build
+  StandardLibrary: True
+Style:
+  FullyQualifiedNamespaces: True
+Diagnostics:
+  ClangTidy:
+    FastCheckFilter: None
+    Add:
+      - bugprone-*
+      - cert-*
+      - clang-diagnostic-*
+      - clang-analyzer-*
+      - concurrency-*
+      - cppcoreguidelines-*
+      - hicpp-*
+      - llvm-*
+      - misc-*
+      - modernize-*
+      - mpi-*
+      - performance-*
+      - portability-*
+      - readability-*
+    Remove:
+      - bugprone-easily-swappable-parameters
+      - cert-err58-cpp
+      - cppcoreguidelines-avoid-magic-numbers
+      - cppcoreguidelines-avoid-non-const-global-variables
+      - cppcoreguidelines-pro-type-vararg
+      - hicpp-braces-around-statements
+      - misc-non-private-member-variables-in-classes
+      - modernize-use-trailing-return-type
+      - readability-braces-around-statements
+      - readability-convert-member-functions-to-static
+      - readability-magic-numbers
+      - hicpp-vararg
+  UnusedIncludes: Strict
+  Includes:
+    MissingIncludes: Strict
+Hover:
+  ShowAKA: True
+---
+If:
+  PathMatch: tests/.*\.cpp
+Diagnostics:
+  ClangTidy:
+    Remove:
+      - misc-use-anonymous-namespace
+      - cppcoreguidelines-avoid-do-while
+      - readability-function-cognitive-complexity
+      - modernize-type-traits
+      - readability-math-missing-parentheses
