@@ -9,6 +9,14 @@ constexpr uint16_t uint8_to_16(uint8_t hi_val, uint8_t lo_val) {
     return (static_cast<uint16_t>(static_cast<uint16_t>(hi_val) << 8U) | lo_val);
 }
 
+constexpr uint8_t bits_hi(uint16_t val) {
+    return (val >> 8U);
+}
+
+constexpr uint8_t bits_lo(uint16_t val) {
+    return static_cast<uint8_t>(val | 0x00'FFU);
+}
+
 class Reg8 {
     uint8_t m_val{0};
 
@@ -18,9 +26,9 @@ public:
     explicit Reg8(uint8_t val)
         : m_val(val) {}
 
-    uint8_t& operator()() { return m_val; }
-
     uint8_t operator()() const { return m_val; }
+
+    void operator()(uint8_t val) { m_val = val; }
 };
 
 class Reg16 {
@@ -33,14 +41,16 @@ public:
         : m_val({hi_val, lo_val}) {}
 
     explicit Reg16(uint16_t val)
-        : m_val({static_cast<uint8_t>(val >> 8U), static_cast<uint8_t>(val & 0x00'FFU)}) {}
+        : m_val({bits_hi(val), bits_lo(val)}) {}
 
-    // NOLINTNEXTLINE(*-reinterpret-cast)
-    uint16_t& operator()() { return *reinterpret_cast<uint16_t*>(&m_val); }
+    void operator()(uint16_t val) {
+        m_val[0] = bits_hi(val);
+        m_val[1] = bits_lo(val);
+    }
 
-    uint8_t& hi() { return m_val[0]; }
+    void hi(uint8_t val) { m_val[0] = val; }
 
-    uint8_t& lo() { return m_val[1]; }
+    void lo(uint8_t val) { m_val[1] = val; }
 
     [[nodiscard]]
     uint16_t operator()() const {
@@ -101,6 +111,12 @@ public:
         uint16_t X() const {
             return uint8_to_16(R26(), R27());
         }
+
+        void X(uint16_t val) {
+            R26(bits_hi(val));
+            R27(bits_lo(val));
+        }
+
     } registers;
 
     struct {
