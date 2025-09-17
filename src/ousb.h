@@ -1,21 +1,44 @@
 #pragma once
+#include "util.h"
 #include <array>
+#include <bitset>
 #include <cstddef>
 #include <cstdint>
 
+#define ALIAS8(alias, register)                                                                    \
+    [[nodiscard]]                                                                                  \
+    uint8_t alias() const {                                                                        \
+        return register();                                                                         \
+    }                                                                                              \
+    void alias(uint8_t val) {                                                                      \
+        register(val);                                                                             \
+    }
+
+#define ALIAS16(alias, reg_lo, reg_hi)                                                             \
+    [[nodiscard]]                                                                                  \
+    uint16_t alias() const {                                                                       \
+        return uint8_to_16(reg_hi(), reg_lo());                                                    \
+    }                                                                                              \
+    void alias(uint16_t val) {                                                                     \
+        reg_hi(bits_hi(val));                                                                      \
+        reg_lo(bits_lo(val));                                                                      \
+    }
+
+#define FULL_ALIAS(alias, reg_lo, reg_hi)                                                          \
+    ALIAS8(alias##L, reg_lo)                                                                       \
+    ALIAS8(alias##H, reg_hi)                                                                       \
+    ALIAS16(alias, reg_lo, reg_hi)
+
+#define NAME_BIT(name, bit)                                                                        \
+    [[nodiscard]]                                                                                  \
+    bool name() const {                                                                            \
+        return m_vals[bit];                                                                        \
+    }                                                                                              \
+    void name(bool val) {                                                                          \
+        m_vals[bit] = val;                                                                         \
+    }
+
 // NOLINTBEGIN(*-magic-numbers)
-
-constexpr uint16_t uint8_to_16(uint8_t hi_val, uint8_t lo_val) {
-    return (static_cast<uint16_t>(static_cast<uint16_t>(hi_val) << 8U) | lo_val);
-}
-
-constexpr uint8_t bits_hi(uint16_t val) {
-    return (val >> 8U);
-}
-
-constexpr uint8_t bits_lo(uint16_t val) {
-    return static_cast<uint8_t>(val | 0x00'FFU);
-}
 
 class Reg8 {
     uint8_t m_val{0};
@@ -74,6 +97,39 @@ public:
     static constexpr size_t sram_size  = 0x3F'FFU;
 
     struct {
+        class Sreg {
+            std::bitset<8> m_vals;
+
+        public:
+            Sreg() = default;
+
+            uint8_t operator()() const { return static_cast<uint8_t>(m_vals.to_ulong()); }
+
+            void operator()(uint8_t val) {
+                m_vals.set(7, static_cast<bool>(val & 0b10000000U));
+                m_vals.set(6, static_cast<bool>(val & 0b01000000U));
+                m_vals.set(5, static_cast<bool>(val & 0b00100000U));
+                m_vals.set(4, static_cast<bool>(val & 0b00010000U));
+                m_vals.set(3, static_cast<bool>(val & 0b00001000U));
+                m_vals.set(2, static_cast<bool>(val & 0b00000100U));
+                m_vals.set(1, static_cast<bool>(val & 0b00000010U));
+                m_vals.set(0, static_cast<bool>(val & 0b00000001U));
+            }
+
+            NAME_BIT(I, 7)
+            NAME_BIT(T, 6)
+            NAME_BIT(H, 5)
+            NAME_BIT(S, 4)
+            NAME_BIT(V, 3)
+            NAME_BIT(N, 2)
+            NAME_BIT(Z, 1)
+            NAME_BIT(C, 0)
+        } SREG;
+    } cpu;
+
+    Reg16 SP;
+
+    struct {
         Reg8 R0;
         Reg8 R1;
         Reg8 R2;
@@ -107,15 +163,9 @@ public:
         Reg8 R30;
         Reg8 R31;
 
-        [[nodiscard]]
-        uint16_t X() const {
-            return uint8_to_16(R26(), R27());
-        }
-
-        void X(uint16_t val) {
-            R26(bits_hi(val));
-            R27(bits_lo(val));
-        }
+        FULL_ALIAS(X, R26, R27)
+        FULL_ALIAS(Y, R28, R29)
+        FULL_ALIAS(Z, R30, R31)
 
     } registers;
 
