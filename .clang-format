@@ -123,5 +123,5 @@ IntegerLiteralSeparator:
   DecimalMinDigits: 5
   Hex: 2
   HexMinDigits: 4
-  Binary: 8
-  BinaryMinDigits: 9
+  Binary: 4
+  BinaryMinDigits: 7

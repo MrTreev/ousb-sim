@@ -1,6 +1,6 @@
 ATMega32A uses the AVRe+ variant of the instruction set
 
-| BITS | BITS | BITS | BITS | Mnemonic |                                    |
+| BITS | BITS | BITS | BITS | Mnemonic | Notes                              |
 |------|------|------|------|----------|------------------------------------|
 | 0000 | 0000 | 0000 | 0000 | NOP      |                                    |
 | 0000 | 0001 | dddd | rrrr | MOVW     |                                    |
