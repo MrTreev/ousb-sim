@@ -1,5 +1,5 @@
-#include "util.h"
 #include "ousb.h"
+#include "util.h"
 #include <imgui.h>
 #include <rlImGui.h>
 
@@ -8,6 +8,11 @@ class Application {
     int  screenHeight = 800;
     int  target_fps   = 60;
     Ousb ousb{};
+
+    struct {
+        bool general_registers = true;
+        bool io_registers      = true;
+    } gui;
 
 public:
     Application() {
@@ -18,6 +23,7 @@ public:
     }
 
     void draw_general_registers() const {
+        if (!gui.general_registers) return;
         if (ImGui::Begin("General Registers", nullptr)) {
             ImGui::Text("R0:  0x%02X", ousb.registers.R0());
             ImGui::Text("R1:  0x%02X", ousb.registers.R1());
@@ -56,6 +62,7 @@ public:
     }
 
     void draw_io_registers() const {
+        if (!gui.io_registers) return;
         if (ImGui::Begin("IO Registers", nullptr)) {
             ImGui::Text("EEAR: 0x%04X", ousb.io_registers.EEAR());
             ImGui::Text("EEDR: 0x%02X", ousb.io_registers.EEDR());
@@ -69,10 +76,8 @@ public:
         BeginDrawing();
         ClearBackground(DARKGRAY);
         rlImGuiBegin();
-        // NOLINTBEGIN(*-vararg,*-union-access)
         draw_general_registers();
         draw_io_registers();
-        // NOLINTEND(*-vararg,*-union-access)
         rlImGuiEnd();
         EndDrawing();
         return true;
@@ -81,6 +86,5 @@ public:
 
 int main() {
     Application app{};
-    // NOLINTNEXTLINE(*-signed-bitwise)
     while (app.tick()) {}
 }
